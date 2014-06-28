@@ -1,0 +1,356 @@
+doctype html
+html(lang="en-us")
+    head
+        meta(charset content="utf-8")
+        meta(http-equiv="Content-Type" content="text/html; charset=UTF-8")
+        meta(http-equiv="X-UA-Compatible" content="IE=edge,chrome=1")
+        meta(name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1")
+        title Click Kingdom
+        link(rel="stylesheet" type="text/css" href="vendor/bootstrap/bootstrap.css")
+        link(rel="stylesheet" type="text/css" href="vendor/bootstrap/bootstrap-theme.css")
+        link(rel="stylesheet" type="text/css" href="styles/style.css")
+    body
+        #onLoadModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='myModalLabel', aria-hidden='true')
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        button.close(type='button', data-dismiss='modal', aria-hidden='true', onmousedown='return false',) ×
+                        h4#myModalLabel.modal-title.text-center Welcome to Click Kingdom!
+                    .modal-body
+                        h3 You are...
+                        input#king.form-control(type='text' placeholder="How will you be called?")
+                        h3  of...
+                        input#realm.form-control(type='text' placeholder="What is the name of the land you rule?")
+                    .modal-footer
+                        p.text-center To start building your realm gather resources and train units!!
+                            button#modalClose.btn.btn-success(ype='button', data-dismiss='modal', onmousedown='return false',) Done
+        #statModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='statModalLabel', aria-hidden='true')
+            .modal-dialog
+                .modal-content
+                    .modal-header
+                        button.close(type='button', data-dismiss='modal', aria-hidden='true', onmousedown='return false') ×
+                        h4#statModalLabel.modal-title.text-center Your buildings and resources
+                    .modal-body
+                        .btn-toolbar.justify(role="toolbar")
+                            .btn-group.btn-group-justified
+                                .btn-group
+                                    .btn.btn-iron.disabled
+                                        | Iron:&ensp;
+                                        span#statModalstatModalironAmount  0
+                                    .btn.btn-copper.disabled
+                                        | Copper:&ensp;
+                                        span#statModalstatModalcopperAmount  0
+                                    .btn.btn-silver.disabled
+                                        | Silver:&ensp;
+                                        span#statModalsilverAmount  0
+                                    .btn.btn-gold.disabled
+                                        | Gold:&ensp;
+                                        span#statModalgoldAmount  0
+                            .btn-group.btn-group-justified
+                                .btn-group
+                                    .btn.disabled.btn-info
+                                        | Population:&ensp;
+                                        span#statModalworkerAmount  0
+                                        | &ensp;/&ensp;
+                                        span#statModalmaxPop 0
+                                    .btn.disabled.btn-info
+                                        span#statModaltentAmount  0
+                                        | Tents
+                                    .btn.disabled.btn-info
+                                        span#statModalhouseAmount  0
+                                        | Houses
+                                    .btn.disabled.btn-info
+                                        span#statModalmillAmount  0
+                                        | Mills
+                                    .btn.disabled.btn-info
+                                        span#statModalquarryAmount  0
+                                        | Quarrys
+                                    .btn.disabled.btn-info
+                                        span#statModalsiloAmount  0
+                                        | Silos
+                                    .btn.disabled.btn-info
+                                        span#statModalmineAmount 0
+                                        | Mines
+                    .modal-footer
+                        button.btn.btn-success(type='button', data-dismiss='modal', onmousedown='return false',) Done
+    .container
+        .row.header
+            .col-xs-10.col-xs-offset-1
+                h1
+                    | Click Kingdoms
+                h2
+                    | All Hail King&ensp;
+                    span#kingName
+                    | !! Welcome to the Land of&ensp;
+                    span#realmName
+                    |  my Lord.
+        .row.visible-xs.hidden-md
+            .col-xs-2.col-xs-offset-4
+                button#showStats.btn.btn-success(type='button', onmousedown='return false') Show Stats
+        .col-xs-12.col-md-4.col-ms-offset-2
+            h4.text-center Gather Resources
+            .btn-toolbar(role='toolbar')
+                .btn-group.btn-group-justified
+                    .btn-group
+                        button#chopWood.btn.btn-primary(type='button', onmousedown='return false') Chop Wood
+                    .btn-group
+                        .btn.btn-default.disabled
+                            span#woodAmount 0
+                            |  /
+                            span#maxWood  100
+                    .btn-group
+                        .btn.btn-default.disabled
+                            span#woodIncrement 0
+                            |  / 5s
+                .btn-group.btn-group-justified
+                    .btn-group
+                        button#mineStone.btn.btn-primary(type='button', onmousedown='return false') Mine Stone
+                    .btn-group
+                        .btn.btn-default.disabled
+                            span#stoneAmount 0
+                            |  /
+                            span#maxStone  100
+                    .btn-group
+                        .btn.btn-default.disabled
+                            span#stoneIncrement 0
+                            |  / 5s
+                .btn-group.btn-group-justified
+                    .btn-group
+                        button#gatherFood.btn.btn-primary(type='button', onmousedown='return false') Gather Food
+                    .btn-group
+                        .btn.btn-default.disabled
+                            span#foodAmount 0
+                            |  /
+                            span#maxFood  100
+                    .btn-group
+                        .btn.btn-default.disabled
+                            span#foodIncrement 0
+                            |  / 5s
+                .btn-group.btn-group-justified
+                    .btn-group
+                        button#mineOre.btn.btn-primary(type='button', onmousedown='return false') Mine Ore
+                    .btn-group
+                        .btn.btn-default.disabled
+                            span#oreAmount 0
+                            |  /
+                            span#maxOre  200
+                    .btn-group
+                        .btn.btn-default.disabled
+                            span#oreIncrement 0
+                            |  / 5s
+            h4.text-center Construct Buildings
+                .btn-toolbar(role="toolbar")
+                    .btn-group.btn-group-justified
+                        .btn-group
+                            button#buildTent.btn.btn-danger(type='button', onmousedown='return false') Pitch Tent
+                        .btn-group
+                            .btn.btn-default.disabled +
+                                span#tentResidents 1
+                                |  Population
+                    .btn-group.btn-group-justified
+                        .btn-group
+                            button#buildHouse.btn.btn-danger(type='button', onmousedown='return false') Build House
+                        .btn-group
+                            .btn.btn-default.disabled +
+                                span#houseResidents 4
+                                |  Population
+                    //.btn-group
+                        .btn-group
+                            button#researchHostel.btn.btn-danger(type='button', onmousedown='return false') Develop Hostels
+                        .btn-group
+                            button#buildHostel.btn.btn-danger.hidden(type='button', onmousedown='return false') Build Hostel
+                        .btn-group
+                            .btn.label.label-default.hidden| -
+                                span#hostelAmount
+                                |  Hostels
+                            .btn.label.label-default
+                                span#hostelCostWood
+                                |  Wood | -
+                                span#hostelCostStone
+                                |  Stone
+                            .btn.label.label-default
+                                span#hostelInfo -400 Wood | -150 Stone
+                        .btn-group
+                            button.btn.btn-default.disabled(type='button', onmousedown='return false', )| +
+                                span#hostelResidents
+                                |  Population
+                    .btn-group.btn-group-justified
+                        .btn-group
+                            button#buildMill.btn.btn-danger.btn-block(type='button', onmousedown='return false') Build Mill
+                        .btn-group
+                            .btn.btn-default.disabled
+                                | +100
+                                | Max Wood
+                    .btn-group.btn-group-justified
+                        .btn-group
+                            button#buildQuarry.btn.btn-danger(type='button', onmousedown='return false') Build Quarry
+                        .btn-group
+                            .btn.btn-default.disabled
+                                | +100
+                                | Max Stone
+                    .btn-group.btn-group-justified
+                        .btn-group
+                            button#buildSilo.btn.btn-danger(type='button', onmousedown='return false') Build Silo
+                        .btn-group
+                            .btn.btn-default.disabled
+                                | +100
+                                | Max Food
+                    .btn-group.btn-group-justified
+                        .btn-group
+                            button#buildMine.btn.btn-danger(type='button', onmousedown='return false') Build Mine
+                        .btn-group
+                            .btn.btn-default.disabled
+                                | +100
+                                | Max Ore
+        .col-md-2.col-md-offset-1.hidden-xs
+            .btn-toolbar.justify(role="toolbar")
+                .btn-group.btn-group-justified
+                    .btn-group
+                        .btn.btn-iron.disabled
+                            | Iron:&ensp;
+                            span#ironAmount  0
+                        .btn.btn-copper.disabled
+                            | Copper:&ensp;
+                            span#copperAmount  0
+                        .btn.btn-silver.disabled
+                            | Silver:&ensp;
+                            span#silverAmount  0
+                        .btn.btn-gold.disabled
+                            | Gold:&ensp;
+                            span#goldAmount  0
+                .btn-group.btn-group-justified
+                    .btn-group
+                        .btn.disabled.btn-info
+                            | Population:&ensp;
+                            span#workerAmount 0
+                            |  &ensp;/&ensp;
+                            span#maxPop 0
+                        .btn.disabled.btn-info
+                            span#tentAmount  0
+                            |  Tents
+                        .btn.disabled.btn-info
+                            span#houseAmount  0
+                            |  Houses
+                        .btn.disabled.btn-info
+                            span#millAmount  0
+                            |  Mills
+                        .btn.disabled.btn-info
+                            span#quarryAmount  0
+                            |  Quarrys
+                        .btn.disabled.btn-info
+                            span#siloAmount  0
+                            |  Silos
+                        .btn.disabled.btn-info
+                            span#mineAmount 0
+                            |  Mines
+        .col-xs-12.col-md-4.col-md-push-1
+            h4.text-center Hire Peons
+            .btn-toolbar(role="toolbar")
+                .btn-group.btn-group-justified
+                    .btn-group
+                        button#hireLogger.btn.btn-success(type='button', onmousedown='return false') Hire Logger
+                    .btn-group
+                        .btn.btn-default.disabled| -
+                            span#loggerCost 10
+                            |  Food
+                    .btn-group
+                        .btn.btn-default.disabled
+                            span#loggerAmount 0
+                            |  Loggers
+                .btn-group.btn-group-justified
+                    .btn-group
+                        button#hireMason.btn.btn-success(type='button', onmousedown='return false') Hire Mason
+                    .btn-group
+                        .btn.btn-default.disabled| -
+                            span#masonCost 10
+                            |  Food
+                    .btn-group
+                        .btn.btn-default.disabled
+                            span#masonAmount 0
+                            |  Masons
+                .btn-group.btn-group-justified
+                    .btn-group
+                        button#hireHunter.btn.btn-success(type='button', onmousedown='return false') Hire Hunter
+                    .btn-group
+                        .btn.btn-default.disabled| -
+                            span#hunterCost 10
+                            |  Food
+                    .btn-group
+                        .btn.btn-default.disabled
+                            span#hunterAmount 0
+                            |  Hunters
+                .btn-group.btn-group-justified
+                    .btn-group
+                        button#hireMiner.btn.btn-success(type='button', onmousedown='return false') Hire Miner&ensp;
+                    .btn-group
+                        .btn.btn-default.disabled| -
+                            span#minerCost  10
+                            |  Food
+                    .btn-group
+                        .btn.btn-default.disabled
+                            span#minerAmount 0
+                            |  Miners
+            h4.text-center Upgrades
+            .col-xs-6.col-xs-pull-2.col-md-4.col-md-pull-1
+                .btn-group.btn-group-vertical
+                    .btn-group
+                        button#upgradeSelf.upgradeTwoFingers.btn-warning.justify(type='button', data-toggle="tooltip", data-container="body", data-placement="left", title="100 Wood 100 Stone 100 Food") Personal Ability
+                            br
+                            .label.dimgray
+                                span#upgradeSelfTotal 2
+                                |  resources per click.
+                    //.btn-group
+                        button.upgradeFiveFingers.hidden
+                            #upgradeFiveFingers.btn.btn-warning Five Fingers
+                                br
+                                span.dimgray 5 resources per click.
+                                br
+                                span 450 Wood   450 Stone   120 Food
+                    .btn-group
+                        button#upgradeSleepingBags.btn-warning.justify(type='button', onmousedown='return false') Sleeping Bags
+                            br
+                            .label.dimgray Tents hold an extra person.
+                    .btn-group
+                        button#upgradeBunkBeds.btn-warning.justify(type='button', onmousedown='return false') Bunk Beds
+                            br
+                            .label.dimgray Double houses capacity.
+                    .btn-group
+                        button#upgradeCarpentry.btn-warning.justify(type='button', onmousedown='return false') Carpentry
+                            br
+                            .label.dimgray Buildings cost less wood.
+                    .btn-group
+                        button#upgradeMasonry.btn-warning.justify(type='button', onmousedown='return false') Masonry
+                            br
+                            .label.dimgray Buildings cost less stone.
+            .col-xs-6.col-md-4.col-md-offset-2
+                .btn-group.btn-group-vertical
+                    .btn-group
+                        button#upgradeSharpenAxes.upgradeSharpenAxes.btn-warning.justify(type='button', onmousedown='return false') Sharpen Axes
+                            br
+                            .label.dimgray Double Loggers gathering.
+                    .btn-group
+                        button#upgradeSharpenPicks.upgradeSharpenPicks.btn-warning.justify(type='button', onmousedown='return false') Sharpen Picks
+                            br
+                            .label.dimgray Double Miners gathering.
+                    .btn-group
+                        button#upgradeStrengthenShovels.upgradeStrengthenShovels.btn-warning.justify(type='button', onmousedown='return false') Strengthen Shovels
+                            br
+                            .label.dimgray Double Masons gathering.
+                    .btn-group
+                        button#upgradeSharpenArrows.upgradeSharpenArrows.btn-warning.justify(type='button', onmousedown='return false') Sharpen Arrows
+                            br
+                            .label.dimgray Double Hunters gathering.
+    hr
+    .row
+        .col-xs-12.col-md-5.col-md-offset-1
+            .well
+                h3 Information
+                #info.info
+        .col-xs-12.col-md-5
+            .well
+                h3 Upgrades
+                #upgrades.info
+            script(src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js")
+            script(src='vendor/bootstrap/bootstrap.min.js' defer='true')
+            script(src='js/script.js' defer='true')
+                                  
