@@ -1,5 +1,14 @@
 "use strict"
 
+define (require) ->
+  $ = require("jquery")
+  units = require("./units")
+  bootstrap = require("bootstrap")
+
+
+
+#TODO - Fix costs on sharpen upgrades
+#TODO - Miners mine ore past capacity
 $ = jQuery
 
 # Variables
@@ -8,95 +17,45 @@ names =
   king: ""
 
 self =
+  increment: 1
   upgrade:
     wood: 100
     stone: 100
     food: 100
     silver: 0
     gold: 0
-
-logger =
-  increment: 1
-  amount: 0
-  cost: 10
-  incPrice:
-    iron: 20
-    silver: 10
-    gold: 5
-miner =
-  increment: 1
-  amount: 0
-  cost: 10
-  incPrice:
-    iron: 20
-    silver: 10
-    gold: 5
-hunter =
-  increment: 1
-  amount: 0
-  cost: 10
-  incPrice:
-    iron: 20
-    silver: 10
-    gold: 5
-mason =
-  increment: 1
-  amount: 0
-  cost: 10
-  incPrice:
-    iron: 20
-    silver: 10
-    gold: 5
-
-worker =
-  amount: 0
-
 wood =
-  name: "wood"
   amount: 0
   increment: 0
   max: 100
-  flag: false
 
 stone =
-  name: "stone"
   amount: 0
   increment: 0
   max: 100
-  flag: false
 
 food =
-  name: "food"
   amount: 0
   increment: 0
   max: 100
-  flag: false
 
 ore =
-  name: "ore"
   increment: 0
   amount: 0
   max: 200
-  flag: false
   iron:
-    name: "iron"
     amount: 0
-
   copper:
-    name: "copper"
     amount: 0
-
   silver:
-    name: "silver"
     amount: 0
-
   gold:
-    name: "gold"
     amount: 0
 
 tent =
   amount: 0
   residents: 1
+  health: 200
   cost:
     wood: 30
   upCost:
@@ -107,6 +66,7 @@ tent =
 house =
   amount: 0
   residents: 4
+  health: 500
   cost:
     wood: 75
     stone: 25
@@ -119,6 +79,7 @@ house =
 hostel =
   amount: 0
   residents: 10
+  health: 1200
   cost:
     wood: 200
     stone: 215
@@ -126,6 +87,7 @@ hostel =
 
 mine =
   amount: 0
+  health: 500
   cost:
     wood: 100
     stone: 100
@@ -133,26 +95,26 @@ mine =
 
 quarry =
   amount: 0
+  health: 500
   cost:
     wood: 100
     stone: 100
-    iron: 0
 
 silo =
   amount: 0
+  health: 500
   cost:
     wood: 100
     stone: 100
-    iron: 0
 
 mill =
   amount: 0
+  health: 500
   cost:
     wood: 100
     stone: 100
-    iron: 0
 
-haggleWood =
+carpentry =
   cost:
     silver: 50
     gold: 25
@@ -160,11 +122,11 @@ masonry =
   cost:
     silver: 50
     gold: 25
-clickIncrement = 1
 maxPop = (tent.residents * tent.amount) + (house.residents * house.amount)
 nIntervId = undefined
 bunkBeds = $('#upgradeBunkBeds')
 bldTent = $('#buildTent')
+bldHouse = $('#buildHouse')
 sleepingBags = $('#upgradeSleepingBags')
 bldMine = $('#buildMine')
 bldMill = $('#buildMill')
@@ -174,17 +136,40 @@ hagStone = $('#upgradeMasonry')
 stoneInc = $('#upgradeStrengthenShovels')
 hagWood = $('#upgradeCarpentry')
 foodInc = $('#upgradeSharpenArrows')
+upSelf = $('#upgradeSelf')
+oreInc = $('#upgradeSharpenPicks')
+upMasonry = $('#upgradeMasonry')
+hagWood = $('#upgradeCarpentry')
+logInc = $('#upgradeSharpenAxes')
 
+# Test max resources
+checkMaxwood = ->
+  wood.amount = wood.max if wood.amount >= wood.max
+  return
+checkMaxStone = ->
+  stone.amount = stone.max if stone.amount >= stone.max
+  return
+checkMaxFood = ->
+  food.amount = food.max if food.amount >= food.max
+  return
+checkMaxOre = ->
+  oreTotal = ore.iron.amount + ore.copper.amount + ore.silver.amount + ore.gold.amount
+  ore.amount = ore.max if oreTotal >= ore.max
+  return
 
 # Display the correct values.
 updateValues = ->
+  ore.increment = (miner.increment * miner.amount)
+  wood.increment = (logger.increment * logger.amount)
+  stone.increment = (mason.increment * mason.amount)
+  food.increment = (hunter.increment * hunter.amount)
+  checkMaxOre()
+  ore.amount = ore.iron.amount + ore.copper.amount + ore.silver.amount + ore.gold.amount
   document.getElementById("maxPop").innerHTML = maxPop
   document.getElementById("tentAmount").innerHTML = tent.amount
   #document.getElementById("tentCostwood").innerHTML = tent.cost.wood
   document.getElementById("tentResidents").innerHTML = tent.residents
   document.getElementById("houseAmount").innerHTML = house.amount
-  #document.getElementById("houseCostwood").innerHTML = house.cost.wood
-  #document.getElementById("houseCostStone").innerHTML = house.cost.stone
   document.getElementById("houseResidents").innerHTML = house.residents
   #document.getElementById("hostelAmount").innerHTML = hostel.amount
   #document.getElementById("hostelCostwood").innerHTML = hostel.cost.wood
@@ -229,34 +214,20 @@ updateValues = ->
   document.getElementById("minerCost").innerHTML = miner.cost
   document.getElementById("hunterCost").innerHTML = hunter.cost
   document.getElementById("masonCost").innerHTML = mason.cost
-  document.getElementById("upgradeSelfTotal").innerHTML = clickIncrement
+  document.getElementById("upgradeSelfTotal").innerHTML = self.increment
+  document.getElementById("oreIncrement").innerHTML = ore.increment
   return
 
-# Test max resources
-checkMaxwood = ->
-  wood.amount = wood.max  if wood.amount >= wood.max
-  return
-checkMaxStone = ->
-  stone.amount = stone.max  if stone.amount >= stone.max
-  return
-checkMaxFood = ->
-  food.amount = food.max  if food.amount >= food.max
-  return
-checkMaxOre = ->
-  oreTotal = ore.iron.amount + ore.copper.amount + ore.silver.amount + ore.gold.amount
-  ore.amount = ore.max  if oreTotal >= ore.max
-  return
 
 # Loggers Gather wood
 gatherWood = ->
-  wood.amount += (logger.increment * logger.amount)
+  wood.amount += wood.increment
   checkMaxwood()
   updateValues()
   return
 
 # Quarriers Gather Stone
 gatherStone = ->
-  stone.increment = mason.increment * mason.amount
   stone.amount += stone.increment
   checkMaxStone()
   updateValues()
@@ -264,7 +235,6 @@ gatherStone = ->
 
 # Hunters Gather Food
 gatherFood = ->
-  food.increment = hunter.increment * hunter.amount
   food.amount += food.increment
   checkMaxFood()
   updateValues()
@@ -272,39 +242,39 @@ gatherFood = ->
 
 # Miners Gather Ore
 gatherOre = ->
-  ores = [
-    "c"
-    "c"
-    "c"
-    "i"
-    "i"
-    "i"
-    "i"
-    "s"
-    "s"
-    "g"
-  ]
-  oreChoice = ores[Math.floor(Math.random() * ores.length)]
-  if oreChoice is "i"
-    ore.iron.amount += ore.increment
-    ore.amount += ore.increment
-  else if oreChoice is "c"
-    ore.copper.amount += ore.increment
-    ore.amount += ore.increment
-  else if oreChoice is "s"
-    ore.silver.amount += ore.increment
-    ore.amount += ore.increment
-  else
-    ore.gold.amount += ore.increment
-    ore.amount += ore.increment
-  checkMaxOre()
-  updateValues()
+  unless ore.amount >= ore.max
+    ores = [
+      "c"
+      "c"
+      "c"
+      "i"
+      "i"
+      "i"
+      "i"
+      "s"
+      "s"
+      "g"
+    ]
+    miners = miner.amount
+    oreChoice = ores[Math.floor(Math.random() * ores.length)]
+    if oreChoice is "i"
+      ore.iron.amount += ore.increment
+      ore.amount += ore.increment
+    else if oreChoice is "c"
+      ore.copper.amount += ore.increment
+      ore.amount += ore.increment
+    else if oreChoice is "s"
+      ore.silver.amount += ore.increment
+      ore.amount += ore.increment
+    else
+      ore.gold.amount += ore.increment
+      ore.amount += ore.increment
+    checkMaxOre()
+    updateValues()
   return
 
 
 $(document).ready ->
-  wood.amount += 100
-  food.amount += 100
   beginTick = ->
     nIntervId = setInterval(tick, 5000)
     return
@@ -314,77 +284,68 @@ $(document).ready ->
     gatherFood()
     gatherOre()
     return
-  $("#onLoadModal").modal()
+  #$("#onLoadModal").modal()
   beginTick()
   updateValues()
-  $("#modalClose").click ->
+  ###$("#modalClose").click ->
     names.realm = document.getElementById("realm").value
     document.getElementById("realmName").innerHTML = names.realm
     names.king = document.getElementById("king").value
     document.getElementById("kingName").innerHTML = names.king
-    return
-  bldTent.tooltip({
-    title: tentPrice
-    placement: 'left'
-    container: 'body'
-  })
-  bunkBeds.tooltip({
-    title: bunkBedPrice
-    placement: 'left'
-    container: 'body'
-  })
+    return###
   return
 
 titleCase = (str) ->
   str.charAt(0).toUpperCase() + str.slice(1)
 
 $('#chopWood').click ->
-  wood.amount += clickIncrement
+  wood.amount += self.increment
   checkMaxwood()
   updateValues()
   return
 
 $('#mineStone').click ->
-  stone.amount += clickIncrement
+  stone.amount += self.increment
   checkMaxStone()
   updateValues()
   return
 
 $('#gatherFood').click ->
-  food.amount += clickIncrement
+  food.amount += self.increment
   checkMaxFood()
   updateValues()
   return
 
 $('#mineOre').click ->
-  ores = [
-    "c"
-    "c"
-    "c"
-    "i"
-    "i"
-    "i"
-    "i"
-    "s"
-    "s"
-    "g"
-  ]
-  oreChoice = ores[Math.floor(Math.random() * ores.length)]
-  if oreChoice is "i"
-    ore.iron.amount += clickIncrement
-    ore.amount += clickIncrement
-  else if oreChoice is "c"
-    ore.copper.amount += clickIncrement
-    ore.amount += clickIncrement
-  else if oreChoice is "s"
-    ore.silver.amount += clickIncrement
-    ore.amount += clickIncrement
-  else
-    ore.gold.amount += clickIncrement
-    ore.amount += clickIncrement
-  checkMaxOre()
-  updateValues()
-  return
+  unless ore.amount >= ore.max
+    ores = [
+      "c"
+      "c"
+      "c"
+      "i"
+      "i"
+      "i"
+      "i"
+      "s"
+      "s"
+      "g"
+    ]
+    oreChoice = ores[Math.floor(Math.random() * ores.length)]
+    if oreChoice is "i"
+      ore.iron.amount += self.increment
+      ore.amount += self.increment
+    else if oreChoice is "c"
+      ore.copper.amount += self.increment
+      ore.amount += self.increment
+    else if oreChoice is "s"
+      ore.silver.amount += self.increment
+      ore.amount += self.increment
+    else
+      ore.gold.amount += self.increment
+      ore.amount += self.increment
+    checkMaxOre()
+    updateValues()
+    return
 
 $('#hireLogger').click ->
   if worker.amount < maxPop
@@ -393,12 +354,10 @@ $('#hireLogger').click ->
       worker.amount++
       logger.amount++
       logger.cost++
-      wood.increment = logger.increment * logger.amount;
       updateValues()
     else $('#info').prepend $("<p>You need more food.</p>").fadeIn("slow")
   else $('#info').prepend $("<p>You need to build more accommodation.</p>").fadeIn("slow")
 
-# Hire Miner
 $('#hireMiner').click ->
   if worker.amount < maxPop
     if food.amount >= miner.cost
@@ -406,8 +365,6 @@ $('#hireMiner').click ->
       worker.amount++
       miner.amount++
       miner.cost++
-      ore.increment = miner.increment * miner.amount
-      document.getElementById("oreIncrement").innerHTML = ore.increment
       updateValues()
     else $('#info').prepend $("<p>You need more food.</p>").fadeIn("slow")
   else $('#info').prepend $("<p>You need to build more accommodation.</p>").fadeIn("slow")
@@ -419,7 +376,6 @@ $('#hireHunter').click ->
       worker.amount++
       hunter.amount++
       hunter.cost++
-      food.increment = hunter.increment * hunter.amount;
       updateValues()
     else $('#info').prepend $("<p>You need more food.</p>").fadeIn("slow")
   else $('#info').prepend $("<p>You need to build more accommodation.</p>").fadeIn("slow")
@@ -431,15 +387,20 @@ $('#hireMason').click ->
       worker.amount++
       mason.amount++
       mason.cost++
-      stone.increment = stone.increment * stone.amount;
       updateValues()
     else $('#info').prepend $("<p>You need more food.</p>").fadeIn("slow")
   else $('#info').prepend $("<p>You need to build more accommodation.</p>").fadeIn("slow")
 
-# Build a tent
-bldTent.click ->
+bldTent.mouseenter ->
   tentPriceText = for resource, price of tent.cost
     "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: tentPriceText
+    placement: "left"
+    container: "body"
+  return
+
+bldTent.click ->
   if wood.amount >= tent.cost.wood
     wood.amount -= tent.cost.wood
     tent.amount += 1
@@ -448,23 +409,17 @@ bldTent.click ->
     document.getElementById('tentAmount').innerHTML = tent.amount
     document.getElementById('maxPop').innerHTML = maxPop
     updateValues()
-    bldTent.tooltip('destroy')
-    bldTent.tooltip({
-      title: tentPriceText
-      placement: 'left'
-      container: 'body'
-    })
+    $(this).tooltip('destroy')
   else $('#info').prepend $("<p>You need more wood.</p>").fadeIn("slow")
 
-
-bldHouse = $('#buildHouse')
-housePriceText = for resource, price of house.cost
-  "#{titleCase(resource)}: -#{price} "
-bldHouse.tooltip({
-  title: housePriceText
-  placement: 'left'
-  container: 'body'
-})
+bldHouse.mouseenter ->
+  housePriceText = for resource, price of house.cost
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: housePriceText
+    placement: "left"
+    container: "body"
+  return
 
 bldHouse.click ->
   if wood.amount >= house.cost.wood and stone.amount >= house.cost.stone
@@ -478,17 +433,9 @@ bldHouse.click ->
     document.getElementById("maxPop").innerHTML = maxPop
     updateValues()
     bldHouse.tooltip('destroy')
-    housePriceText = for resource, price of house.cost
-      "#{titleCase(resource)}: -#{price} "
-    bldHouse.tooltip({
-      title: housePriceText
-      placement: 'left'
-      container: 'body'
-    })
   else $('#info').prepend $("<p>You need more building materials.</p>").fadeIn("slow")
 
 
-# Research Hostel
 $('#researchHostel').click ->
   progressWrap = document.getElemenyByClass("progress-wrap-hostel")
   if wood.amount >= 400 and stone.amount >= 150
@@ -511,8 +458,6 @@ $('#researchHostel').click ->
     updateValues()
   else $('#info').prepend $("<p>You need more building materials.</p>").fadeIn("slow")
 
-
-# Build a hostel
 $('#buildHostel').click ->
   if wood.amount >= hostel.cost.wood and stone.amount >= hostel.cost.stone
     wood.amount -= hostel.cost.wood
@@ -527,101 +472,81 @@ $('#buildHostel').click ->
   else $('#info').prepend $("<p>You need more building materials.</p>").fadeIn("slow")
 
 
+bldMill.mouseenter ->
+  millPrice = for resource, price of mill.cost
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: millPrice
+    placement: 'left'
+    container: 'body'
+  return
 
-millPrice = for resource, price of mill.cost
-  "#{titleCase(resource)}: -#{price} "
-bldMill.tooltip({
-  title: millPrice
-  placement: 'left'
-  container: 'body'
-})
-# Build wood storage
 bldMill.click ->
-  if wood.amount >= mill.cost.wood and stone.amount >= mill.cost.stone and ore.iron.amount >= mill.cost.iron
+  if wood.amount >= mill.cost.wood and stone.amount >= mill.cost.stone
     wood.amount -= mill.cost.wood
     stone.amount -= mill.cost.stone
-    ore.iron.amount -= mill.cost.iron
     mill.amount += 1
     wood.max += 100
     document.getElementById("millAmount").innerHTML = mill.amount
-    document.getElementById("maxwood").innerHTML = wood.max
+    document.getElementById("maxWood").innerHTML = wood.max
     bldMill.tooltip('destroy')
-    millPrice = for resource, price of mill.cost
-      "#{titleCase(resource)}: -#{price} "
-    bldMill.tooltip({
-      title: millPrice
-      placement: 'left'
-      container: 'body'
-    })
+    updateValues()
   else $('#info').prepend $("<p>You need more building materials.</p>").fadeIn("slow")
 
-quarryPrice = for resource, price of quarry.cost
-  "#{titleCase(resource)}: -#{price} "
-bldQuarry.tooltip({
-  title: quarryPrice
-  placement: "left"
-  container: "body"
-})
-# Build Stone storage
+bldQuarry.mouseenter ->
+  quarryPrice = for resource, price of quarry.cost
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: quarryPrice
+    placement: "left"
+    container: "body"
+  return
+
 bldQuarry.click ->
-  if wood.amount >= quarry.cost.wood and stone.amount >= quarry.cost.stone and Ore.iron.amount >= quarry.cost.iron
+  if wood.amount >= quarry.cost.wood and stone.amount >= quarry.cost.stone
     wood.amount -= quarry.cost.wood
     stone.amount -= quarry.cost.stone
-    ore.iron.amount -= quarry.cost.iron
     quarry.amount += 1
     stone.max += 100
     updateValues()
     document.getElementById("quarryAmount").innerHTML = quarry.amount
     document.getElementById("maxStone").innerHTML = stone.max
     bldQuarry.tooltip('destroy')
-    quarryPrice = for resource, price of quarry.cost
-      "#{titleCase(resource)}: -#{price} "
-    bldQuarry.tooltip({
-      title: quarryPrice
-      placement: "left"
-      container: "body"
-    })
   else $('#info').prepend $("<p>You need more building materials.</p>").fadeIn("slow")
 
 
 
-siloPriceText = for resource, price of silo.cost
-  "#{titleCase(resource)}: -#{price} "
-bldSilo.tooltip({
-  title: siloPriceText
-  placement: "left"
-  container: "body"
-})
-# Build Food storage
+bldSilo.mouseenter ->
+  siloPriceText = for resource, price of silo.cost
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: siloPriceText
+    placement: "left"
+    container: "body"
+  return
+
 bldSilo.click ->
-  if wood.amount >= silo.cost.wood and stone.amount >= silo.cost.stone and ore.iron.amount >= silo.cost.iron
+  if wood.amount >= silo.cost.wood and stone.amount >= silo.cost.stone
     wood.amount -= silo.cost.wood
     stone.amount -= silo.cost.stone
-    ore.iron.amount -= silo.cost.iron
     silo.amount += 1
     food.max += 100
     updateValues()
     document.getElementById("siloAmount").innerHTML = silo.amount
     document.getElementById("maxFood").innerHTML = food.max
     bldSilo.tooltip("destroy")
-    siloPriceText = for resource, price of silo.cost
-      "#{titleCase(resource)}: -#{price} "
-    bldSilo.tooltip({
-      title: siloPriceText
-      placement: "left"
-      container: "body"
-    })
   else $('#info').prepend $("<p>You need more building materials.</p>").fadeIn("slow")
 
 
-minePriceText = for resource, price of mine.cost
-  "#{titleCase(resource)}: -#{price} "
-bldMine.tooltip({
-  title: minePriceText
-  placement: "left"
-  container: "body"
-})
-# Build Ore storage
+bldMine.mouseenter ->
+  minePriceText = for resource, price of mine.cost
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: minePriceText
+    placement: "left"
+    container: "body"
+  return
+
 bldMine.click ->
   if wood.amount >= mine.cost.wood and stone.amount >= mine.cost.stone and ore.iron.amount >= mine.cost.iron
     wood.amount -= mine.cost.wood
@@ -633,63 +558,36 @@ bldMine.click ->
     document.getElementById("mineAmount").innerHTML = mine.amount
     document.getElementById("maxOre").innerHTML = ore.max
     bldMine.tooltip("destroy")
-    minePriceText = for resource, price of mine.cost
-      "#{titleCase(resource)}: -#{price} "
-    bldMine.tooltip({
-      title: minePriceText
-      placement: 'left'
-      container: 'body'
-    })
   else $('#info').prepend $("<p>You need more building materials.</p>").fadeIn("slow")
 
 
+upSelf.mouseenter ->
+  upSelfPriceText = for resource, price of self.upgrade
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: upSelfPriceText
+    placement: 'left'
+    container: 'body'
+  return
+
 # Upgrades
-$('#upgradeSelf').click ->
-  upCost = self.increment * 100
-  if self.increment <= 5
-    if wood.amount >= upCost and stone.amount >= upCost and food.amount >= upCost
-      wood.amount -= upCost
-      stone.amount -= upCost
-      food.amount -= upCost
-      self.increment += 1
-      $('#upgrades').append $("<p>Personal Ability | <span id='clickIncrement'>2</span> Resources Per Click</p>").fadeIn("slow")
-      updateValues()
-    else $('#info').prepend $("<p>You need more resources.</p>").fadeIn("slow")
-  if self.increment <= 7
-    SilverUpCost = upCost * 1.2
-    GoldUpCost = upCost * 1.1
-    if wood.amount >= upCost and stone.amount >= upCost and food.amount >= upCost and Ore.Silver.amount >= SilverUpCost and Ore.Gold.amount >= GoldUpCost
-      wood.amount -= upCost
-      stone.amount -= upCost
-      food.amount -= upCost
-      ore.silver.amount -= SilverUpCost
-      ore.gold.amount -= GoldUpCost
-      self.increment += 1
-      $('#upgrades').append $("<p>Personal Ability | <span id='clickIncrement'>2</span> Resources Per Click</p>").fadeIn("slow")
-      updateValues()
-    else $('#info').prepend $("<p>You need more resources.</p>").fadeIn("slow")
+upSelf.click ->
+  if resource.amount >= (price * self.increment).toFixed(0) for resource, price of self.upgrade
+    resource.amount -= (price * self.increment).toFixed(0)
+    self.increment += 1
+    updateValues()
+    $('#upgrades').prepend $("<p>Personal Ability | <span id='clickIncrement#{self.increment}'>#{self.increment}</span> Resources Per Click</p>").fadeIn("slow")
+    upSelf.tooltip("destroy")
+  else $('#info').prepend $("<p>You need more #{resource}.</p>").fadeIn("slow")
 
-  #$('#upgradeFiveFingers').click ->
-  #  if wood.amount >= 450 and stone.amount >= 450 and food.amount >= 120
-  #    wood.amount -= 450
-  #    stone.amount -= 450
-  #    food.amount -= 120
-  #    clickIncrement += 3
-  #    $('.upgradeFiveFingers').addClass 'hidden'
-  #    $('#upgrades").prepend $("<p>Five Fingers | Five Resources Per Click</p>").fadeIn("slow")
-  #    updateValues()
-  #  else
-  #    $('#info').prepend $("<p>You need more resources.</p>").fadeIn("slow")
-  #  return
-
-
-sleepingBagsPriceText = for resource, price of tent.upCost
-  "#{titleCase(resource)}: -#{price} "
-sleepingBags.tooltip({
-  title: sleepingBagsPriceText
-  placement: 'left'
-  container: 'body'
-})
+sleepingBags.mouseenter ->
+  sleepingBagsPriceText = for resource, price of tent.upCost
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: sleepingBagsPriceText
+    placement: 'left'
+    container: 'body'
+  return
 
 sleepingBags.click (event) ->
   if wood.amount >= 100 and ore.silver.amount >= 15 and ore.gold.amount >= 10
@@ -705,55 +603,54 @@ sleepingBags.click (event) ->
     updateValues()
   else $('#info').prepend $("<p>You need more resources.</p>").fadeIn("slow")
 
-bunkBedPriceText = for resource, price of house.upCost
-  "#{titleCase(resource)}: -#{price} "
-bunkBeds.tooltip({
-  title: bunkBedPriceText
-  placement: 'left'
-  container: 'body'
-})
+bunkBeds.mouseenter ->
+  bunkBedPriceText = for resource, price of house.upCost
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: bunkBedPriceText
+    placement: 'left'
+    container: 'body'
+  return
+
 bunkBeds.click ->
-  if wood.amount >= 100 and stone.amount >= 50 and food.amount >= 100
-    wood.amount -= 100
-    stone.amount -= 50
-    food.amount -= 50
-    house.residents = 5
-    maxPop += house.amount #Ore only works because we are adding ONE resident.
+  if resource.amount >= price for resource, price of house.upCost
+    resource.amount -= price for resource, price of house.upCost
+    house.residents = 8
+    maxPop += (house.amount * 2)
+    document.getElementById("maxPop").innerHTML = maxPop
+    document.getElementById("houseResidents").innerHTML = house.residents
     bunkBeds.addClass 'hidden'
-    $('#upgrades').prepend $("<p>Bunk Beds | Five People, One House</p>").fadeIn("slow")
-    updateValues()
+    $('#upgrades').prepend $("<p>Bunk Beds | Eight People, One House</p>").fadeIn("slow")
   else $('#info').prepend $("<p>You need more resources.</p>").fadeIn("slow")
 
-logInc = $('#upgradeSharpenAxes')
-logIncPrice = for resource, price of logger.incPrice
-  "#{titleCase(resource)}: -#{price} "
-logInc.tooltip({
-  title: logIncPrice
-  placement: 'left'
-  container: 'body'
-})
+logInc.mouseenter ->
+  logIncPrice = for resource, price of logger.incPrice
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: logIncPrice
+    placement: 'left'
+    container: 'body'
+  return
 
 logInc.click ->
-  if wood.amount >= 50 and stone.amount >= 100 and food.amount >= 50
-    wood.amount -= 50
-    stone.amount -= 100
-    food.amount -= 50
+  if resource.amount >= price for resource, price of logger.incPrice
+    resource.amount -= price
     logger.increment += 1
     $('.upgradeSharpenAxes').addClass 'hidden'
     $('#upgrades').prepend $("<p>Sharpen Axes | Loggers Chop Two wood Each</p>").fadeIn("slow")
     updateValues()
-  else $('#info').prepend $("<p>You need more resources.</p>").fadeIn("slow")
+  else $('#info').prepend $("<p>You need more resources.</p>").fadeIn('slow')
 
-OreInc = $('#upgradeSharpenPicks')
-OreIncPrice = for resource, price of miner.incPrice
-  "#{titleCase(resource)}: -#{price} "
-OreInc.tooltip({
-  title: OreIncPrice
-  placement: 'left'
-  container: 'body'
-})
+oreInc.mouseenter ->
+  oreIncPrice = for resource, price of miner.incPrice
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: oreIncPrice
+    placement: 'left'
+    container: 'body'
+  return
 
-OreInc.click ->
+oreInc.click ->
   if wood.amount >= 50 and stone.amount >= 100 and food.amount >= 50
     wood.amount -= 50
     stone.amount -= 100
@@ -764,31 +661,35 @@ OreInc.click ->
     updateValues()
   else $('#info').prepend $("<p>You need more resources.</p>").fadeIn("slow")
 
-stoneIncPrice = for resource, price of mason.incPrice
-  "#{titleCase(resource)}: -#{price} "
-stoneInc.tooltip({
-  title: stoneIncPrice
-  placement: 'left'
-  container: 'body'
-})
+stoneInc.mouseenter ->
+  stoneIncPrice = for resource, price of mason.incPrice
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: stoneIncPrice
+    placement: 'left'
+    container: 'body'
+  return
+
 stoneInc.click ->
   if wood.amount >= 50 and stone.amount >= 100 and food.amount >= 50
     wood.amount -= 50
     stone.amount -= 100
     food.amount -= 50
     mason.increment += 1
+    stone.increment = mason.increment * mason.amount
     $('.upgradeStrengthenShovels').addClass 'hidden'
     $('#upgrades').prepend $("<p>Strengthen Shovels | Masons get double resources.</p>").fadeIn("slow")
     updateValues()
   else $('#info').prepend $("<p>You need more resources.</p>").fadeIn("slow")
 
-foodIncPrice = for resource, price of hunter.incPrice
-  "#{titleCase(resource)}: -#{price} "
-foodInc.tooltip({
-  title: foodIncPrice
-  placement: 'left'
-  container: 'body'
-})
+foodInc.mouseenter ->
+  foodIncPrice = for resource, price of hunter.incPrice
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: foodIncPrice
+    placement: 'left'
+    container: 'body'
+  return
 
 foodInc.click ->
   if wood.amount >= 50 and stone.amount >= 100 and food.amount >= 50
@@ -801,48 +702,55 @@ foodInc.click ->
     updateValues()
   else $('#info').prepend $("<p>You need more resources.</p>").fadeIn("slow")
 
+hagWood.mouseenter ->
+  hagwoodPrice = for resource, price of carpentry.cost
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: hagwoodPrice
+    placement: 'left'
+    container: 'body'
+  return
 
-hagwoodPrice = for resource, price of haggleWood.cost
-  "#{titleCase(resource)}: -#{price} "
-hagWood.tooltip({
-  title: hagwoodPrice
-  placement: 'left'
-  container: 'body'
-})
 hagWood.click ->
-  hagWood = $('#upgradeCarpentry')
-  if ore.gold.amount >= 150 and food.amount >= 50
-    stone.amount -= 150
-    food.amount -= 50
-    house.cost.wood -= 25
+  if ore.gold.amount >= 25 and ore.silver.amount >= 50
+    ore.gold.amount -= 25
+    ore.silver.amount -= 50
+    house.cost.wood -= 30
     tent.cost.wood -= 15
     hostel.cost.wood -= 40
-    hagWood.addClass 'hidden'
+    mill.cost.wood -= 25
+    silo.cost.wood -= 25
+    quarry.cost.wood -= 25
+    mine.cost.wood -= 25
+    bldHouse.tooltip 'destroy'
+    bldTent.tooltip 'destroy'
+    #$('buildHostel').tooltip 'destroy'
+    $('buildMine').tooltip 'destroy'
+    $('buildSilo').tooltip 'destroy'
+    $('buildQuarry').tooltip 'destroy'
+    $('buildMill').tooltip 'destroy'
+    $(this).addClass 'hidden'
     $('#upgrades').prepend $("<p>Mates Rates - wood | Houses and Tents Cost Less wood</p>").fadeIn('slow')
     updateValues()
   else $('#info').prepend $("<p>You need more resources.</p>").fadeIn('slow')
 
-upMasonry = $('#upgradeMasonry')
-masonryPriceText = for resource, price of masonry.cost
-  "#{titleCase(resource)}: -#{price} "
-upMasonry.tooltip({
-  title: masonryPriceText
-  placement: 'left'
-  container: 'body'
-})
+upMasonry.mouseenter ->
+  masonryPriceText = for resource, price of masonry.cost
+    "#{titleCase(resource)}: -#{price} "
+  $(this).tooltip
+    title: masonryPriceText
+    placement: 'left'
+    container: 'body'
+  return
+
 upMasonry.click ->
   if wood.amount >= 150 and food.amount >= 50
     wood.amount -= 150
     food.amount -= 50
     house.cost.stone -= 20
     hostel.cost.stone -= 40
-    updateValues()
-    upMasonry.tooltip('destroy')
+    upMasonry.tooltip 'destroy'
     upMasonry.addClass 'hidden'
-    $('#upgrades').prepend $("<p>Mates Rates - Stone | Houses Cost Less Stone</p>").fadeIn('slow')
-    upMasonry.tooltip({
-      title: masonryPriceText
-      placement: 'left'
-      container: 'body'
-    })
-  else $('#info').prepend $("<p>You need more resources.</p>").fadeIn('slow')
+    $('#upgrades').prepend $("<p>Mates Rates - Stone | Houses Cost Less Stone</p>").fadeIn 'slow'
+    updateValues()
+  else $('#info').prepend $("<p>You need more resources.</p>").fadeIn 'slow'

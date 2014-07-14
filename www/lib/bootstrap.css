@@ -1,4 +1,4 @@
-@import url(http://fonts.googleapis.com/css?family=Jacques+Francois);
+/*@import url(http://fonts.googleapis.com/css?family=Jacques+Francois);*/
 
 html {
     font-family: sans-serif;
@@ -10,7 +10,7 @@ body {
     margin: 0
 }
 
-article, aside, details, figcaption, figure, footer, header, hgroup, main, nav, section, summary {
+article, aside, details, figcaption, figure, footer, header, main, nav, section, summary {
     display: block
 }
 
@@ -5874,7 +5874,7 @@ button.close {
 }
 
 @-ms-viewport {
-    width: device-width
+    width: device-width;
 }
 
 .visible-lg, .visible-md, .visible-print, .visible-sm, .visible-xs {
